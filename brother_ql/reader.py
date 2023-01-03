@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 OPCODES = {
     # signature              name    following bytes   description
-    b'\x00':                 ("preamble",       -1, "Preamble, 200-300x 0x00 to clear comamnd buffer"),
+    b'\x00':                 ("preamble",       -1, "Preamble, 200-400x 0x00 to clear comamnd buffer"),
     b'\x4D':                 ("compression",     1, ""),
     b'\x67':                 ("raster QL",         -1, ""),
     b'\x47':                 ("raster P-touch",    -1, ""),
@@ -66,9 +66,12 @@ RESP_ERROR_INFORMATION_2_DEF = {
 
 RESP_MEDIA_TYPES = {
   0x00: 'No media',
-  0x01: 'Laminated Tape',
+  0x01: 'Laminated tape',
+  0x03: 'Non-laminated tape',
   0x0A: 'Continuous length tape',
   0x0B: 'Die-cut labels',
+  0x11: 'Heat-shrink tube',
+  0xff: 'Incompatible tape',
 }
 
 RESP_STATUS_TYPES = {
