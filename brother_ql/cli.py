@@ -8,8 +8,8 @@ import logging
 import click
 
 # imports from this very package
-from brother_ql.devicedependent import models, label_sizes
-from brother_ql.backends import available_backends
+from brother_ql.devicedependent import models, label_sizes, label_type_specs, DIE_CUT_LABEL, ENDLESS_LABEL, ROUND_DIE_CUT_LABEL
+from brother_ql.backends import available_backends, backend_factory
 
 
 logger = logging.getLogger('brother_ql')
@@ -153,8 +153,7 @@ def print_cmd(ctx, *args, **kwargs):
 def analyze_cmd(ctx, *args, **kwargs):
     from brother_ql.reader import BrotherQLReader
     br = BrotherQLReader(kwargs.get('instructions'))
-    if kwargs.get('filename_format'): 
-        br.filename_fmt = kwargs.get('filename_format')
+    if kwargs.get('filename_format'): br.filename_fmt = kwargs.get('filename_format')
     br.analyse()
 
 @cli.command(name='send', short_help='send an instruction file to the printer')
