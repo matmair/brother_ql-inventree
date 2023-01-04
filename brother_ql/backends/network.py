@@ -7,37 +7,37 @@ Works cross-platform.
 
 from __future__ import unicode_literals
 from builtins import str
+import enum
 
-from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
-from pysnmp.carrier.asyncore.dgram import udp
-from pyasn1.codec.ber import encoder, decoder
+from pysnmp.proto.rfc1157 import VarBind
 from pysnmp.proto import api
 from pysnmp import hlapi
 
 import socket
 from time import time
-import select
 
-import brother_ql
+from enum import Enum
 
 from . import quicksnmp
 from .generic import BrotherQLBackendGeneric
 
 # Some SNMP OID's that we can use to get printer information
-brother_ql_snmp_oids = {
-    "snmp_get_ip"       : "1.3.6.1.4.1.1240.2.3.4.5.2.3.0",
-    "snmp_get_netmask"  : "1.3.6.1.4.1.1240.2.3.4.5.2.4.0",
-    "snmp_get_mac"      : "1.3.6.1.4.1.1240.2.3.4.5.2.4.0",
-    "snmp_get_location" : "1.3.6.1.2.1.1.6.0",
-    "snmp_get_model"    : "1.3.6.1.2.1.25.3.2.1.3.1",
-    "snmp_get_serial"   : "1.3.6.1.2.1.43.5.1.1.17",
-    "snmp_get_status"   : "1.3.6.1.4.1.2435.3.3.9.1.6.1.0"
-}
+class Brother_SNMP_OID(Enum):
+    '''SNMP OID's'''
+    GET_IP       = "1.3.6.1.4.1.1240.2.3.4.5.2.3.0"
+    GET_NETMASK  = "1.3.6.1.4.1.1240.2.3.4.5.2.4.0"
+    GET_MAC      = "1.3.6.1.4.1.1240.2.3.4.5.2.4.0"
+    GET_LOCATION = "1.3.6.1.2.1.1.6.0"
+    GET_MODEL    = "1.3.6.1.2.1.25.3.2.1.3.1"
+    GET_SERIAL   = "1.3.6.1.2.1.43.5.1.1.17"
+    GET_STATUS   = "1.3.6.1.4.1.2435.3.3.9.1.6.1.0"
 
-maxWaitForResponses = 5
-maxNumberOfResponses = 10
-startedAt = 0
+# SNMP Contants 
+SNMP_MAX_WAIT_FOR_RESPONSES = 5
+SNMP_MAX_NUMBER_OF_RESPONSES = 10
 
+# Global variables
+Broadcast_Started_At = 0
 foundPrinters = set()
 
 def list_available_devices():
@@ -55,8 +55,7 @@ def list_available_devices():
     reqPDU = pMod.GetRequestPDU()
     pMod.apiPDU.setDefaults(reqPDU)
     pMod.apiPDU.setVarBinds(
-        reqPDU, ((brother_ql_snmp_oids['snmp_get_ip'], pMod.Null('')),
-                 (brother_ql_snmp_oids['snmp_get_status'], pMod.Null('')))
+        reqPDU, [(Brother_SNMP_OID.GET_IP.value, pMod.Null(''))]
     )
 
     # Build message
@@ -69,11 +68,11 @@ def list_available_devices():
     foundPrinters.clear()
 
     # set start time for timeout timer
-    startedAt = time()
+    Broadcast_Started_At = time()
 
     # We need some snmp request sent to 255.255.255.255 here
     try:
-        quicksnmp.broadcastSNMPReq(reqMsg, cbRecvFun, cbTimerFun, maxNumberOfResponses)
+        quicksnmp.broadcastSNMPReq(reqMsg, cbRecvFun, cbTimerFun, SNMP_MAX_NUMBER_OF_RESPONSES)
     except TimeoutTimerExpired:
         pass
 
@@ -106,14 +105,15 @@ class BrotherQLBackendNetwork(BrotherQLBackendGeneric):
                 self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 self.s.connect((self.host, port))
-            except OSError as e:
+            except socket.error as e:
                 raise ValueError('Could not connect to the device.') from e
             if self.strategy in ('socket_timeout', 'try_twice'):
                 self.s.settimeout(self.read_timeout)
             else:
                 self.s.settimeout(0)
         else:
-            raise NotImplementedError('Currently the printer can be specified either via an appropriate string.')
+            raise NotImplementedError('Currently the printer can be \
+                specified either via an appropriate string.')
 
     def _write(self, data):
         self.s.settimeout(10)
@@ -128,11 +128,11 @@ class BrotherQLBackendNetwork(BrotherQLBackendGeneric):
                 tries = 2
             for i in range(tries):
                 try:
-                    # Using SNMPv2c, we retrieve the status of the remote device
+                    # Using SNMP, we retrieve the status of the remote device
                     dataset = quicksnmp.get(self.host,
-                                            [brother_ql_snmp_oids['snmp_get_status']],
+                                            [Brother_SNMP_OID.GET_STATUS.value],
                                             hlapi.CommunityData('public'))
-                    return dataset[brother_ql_snmp_oids['snmp_get_status']]
+                    return dataset[Brother_SNMP_OID.GET_STATUS.value]
                 except socket.timeout:
                     pass
             return b''
@@ -148,12 +148,12 @@ class TimeoutTimerExpired(Exception):
 
 def cbTimerFun(timeNow):
     '''Countdown callback to check if the requested wait time has elapased'''
-    if timeNow - startedAt > maxWaitForResponses:
+    if timeNow - Broadcast_Started_At > SNMP_MAX_WAIT_FOR_RESPONSES:
         raise TimeoutTimerExpired
 
 
 def cbRecvFun(transportDispatcher, transportDomain, 
                 transportAddress, wholeMsg):
-    '''Receive data callback'''
+    '''Receive SNMP data callback'''
     foundPrinters.add(f"{transportAddress[0]}:{transportAddress[1]}")
     return wholeMsg
