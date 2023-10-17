@@ -62,6 +62,8 @@ network (1) | TCP | ✔ | ✔ | ✔
 linux\_kernel | USB | ✔ (2) | ✘ | ✘
 pyusb (3) | USB | ✔ (3.1) | ✔ (3.2) | ✔ (3.3)
 
+Warning: when using one of the USB backends make sure the Editor Lite feature is turned off (if your model supports it), otherwise the USB Printer interface won't be detected.
+
 ## Significant Changes:
 v1.0:
 - Renamed the package to `brother_ql-inventree` and added a release action https://github.com/matmair/brother_ql-inventree/pull/16
@@ -69,3 +71,4 @@ v1.0:
 - Added label support for DK-1234 https://github.com/matmair/brother_ql-inventree/pull/22 , 54x29  https://github.com/matmair/brother_ql-inventree/pull/19 , DK22246 https://github.com/matmair/brother_ql-inventree/pull/20, ...
 
 Read the full old Readme [here](https://github.com/matmair/brother_ql-inventree/blob/cleanup/OLD_README.md).
+
