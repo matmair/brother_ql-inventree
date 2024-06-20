@@ -18,7 +18,7 @@ QL-600 (✓), QL-650TD
 QL-700 (✓), QL-710W (✓), QL-720NW (✓)
 QL-800 (✓), QL-810W (✓), QL-820NWB (✓)
 QL-1050 (✓), QL-1060N (✓),
-QL-1100 (✓), QL-1100NWB, QL-1115NWB.
+QL-1100 (✓), QL-1110NWB, QL-1115NWB.
 
 ### Verified labels
 
