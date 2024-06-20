@@ -39,7 +39,6 @@ setup(name='brother_ql',
       platforms = 'any',
       install_requires = [
           "click",
-          "future",
           "packbits",
           "pillow>=10.0.0",
           "pyusb",
