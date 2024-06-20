@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # Python standard library
-from __future__ import print_function
 import logging
 
 # external dependencies

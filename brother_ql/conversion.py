@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 
-from __future__ import division, unicode_literals
-from builtins import str
-
 import logging
 
 from PIL import Image
 import PIL.ImageOps, PIL.ImageChops
 
-from brother_ql.raster import BrotherQLRaster
 from brother_ql.devicedependent import ENDLESS_LABEL, DIE_CUT_LABEL, ROUND_DIE_CUT_LABEL, PTOUCH_ENDLESS_LABEL
 from brother_ql.devicedependent import label_type_specs, right_margin_addition
 from brother_ql import BrotherQLUnsupportedCmd

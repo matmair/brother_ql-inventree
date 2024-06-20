@@ -9,7 +9,6 @@ authors = [
 license = {text = "GPL"}
 dependencies = [
     "click",
-    "future",
     "packbits",
     "pillow>=10.0.0",
     "pyusb",
