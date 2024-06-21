@@ -7,8 +7,6 @@ The central piece of code in this module is the class
 :py:class:`BrotherQLRaster`.
 """
 
-from builtins import bytes
-
 import struct
 import logging
 

@@ -5,8 +5,6 @@ Backend to support Brother QL-series printers via network.
 Works cross-platform.
 """
 
-from builtins import str
-
 import socket, time, select
 
 from .generic import BrotherQLBackendGeneric

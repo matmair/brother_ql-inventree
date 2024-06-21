@@ -1,5 +1,4 @@
 
-from builtins import bytes
 
 import logging
 

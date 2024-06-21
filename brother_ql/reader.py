@@ -8,8 +8,6 @@ import sys
 from PIL import Image
 from PIL.ImageOps import colorize
 
-from builtins import bytes
-
 logger = logging.getLogger(__name__)
 
 OPCODES = {
