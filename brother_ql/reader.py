@@ -117,10 +117,7 @@ RESP_BYTE_NAMES = [
 ]
 
 def hex_format(data):
-    try: # Py3
-        return ' '.join('{:02X}'.format(byte) for byte in data)
-    except ValueError: # Py2
-        return ' '.join('{:02X}'.format(ord(byte)) for byte in data)
+    return ' '.join('{:02X}'.format(byte) for byte in data)
 
 def chunker(data, raise_exception=False):
     """

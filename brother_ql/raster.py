@@ -26,11 +26,7 @@ from .devicedependent import models, \
                              modesetting
 
 from . import BrotherQLError, BrotherQLUnsupportedCmd, BrotherQLUnknownModel, BrotherQLRasterError
-
-try:
-    from io import BytesIO
-except: # Py2
-    from cStringIO import StringIO as BytesIO
+from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
