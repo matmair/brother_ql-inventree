@@ -1,10 +1,11 @@
 from PIL import Image
 import colorsys
 
-def filtered_hsv(im, filter_h, filter_s, filter_v, default_col=(255,255,255)):
-    """ https://stackoverflow.com/a/22237709/183995 """
 
-    hsv_im = im.convert('HSV')
+def filtered_hsv(im, filter_h, filter_s, filter_v, default_col=(255, 255, 255)):
+    """https://stackoverflow.com/a/22237709/183995"""
+
+    hsv_im = im.convert("HSV")
     H, S, V = 0, 1, 2
     hsv = hsv_im.split()
     mask_h = hsv[H].point(filter_h)

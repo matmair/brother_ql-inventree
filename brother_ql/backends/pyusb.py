@@ -15,6 +15,7 @@ import usb.util
 
 from .generic import BrotherQLBackendGeneric
 
+
 def list_available_devices():
     """
     List all available devices for the respective backend
@@ -27,6 +28,7 @@ def list_available_devices():
     class find_class(object):
         def __init__(self, class_):
             self._class = class_
+
         def __call__(self, device):
             # first, let's check the device
             if device.bDeviceClass == self._class:
@@ -40,16 +42,21 @@ def list_available_devices():
             return False
 
     # only Brother printers
-    printers = usb.core.find(find_all=1, custom_match=find_class(7), idVendor=0x04f9)
+    printers = usb.core.find(find_all=1, custom_match=find_class(7), idVendor=0x04F9)
 
     def identifier(dev):
         try:
             serial = usb.util.get_string(dev, 256, dev.iSerialNumber)
-            return 'usb://0x{:04x}:0x{:04x}_{}'.format(dev.idVendor, dev.idProduct, serial)
+            return "usb://0x{:04x}:0x{:04x}_{}".format(
+                dev.idVendor, dev.idProduct, serial
+            )
         except:
-            return 'usb://0x{:04x}:0x{:04x}'.format(dev.idVendor, dev.idProduct)
+            return "usb://0x{:04x}:0x{:04x}".format(dev.idVendor, dev.idProduct)
 
-    return [{'identifier': identifier(printer), 'instance': printer} for printer in printers]
+    return [
+        {"identifier": identifier(printer), "instance": printer} for printer in printers
+    ]
+
 
 class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
     """
@@ -63,27 +70,33 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
         """
 
         self.dev = None
-        self.read_timeout =    10. # ms
-        self.write_timeout = 15000. # ms
+        self.read_timeout = 10.0  # ms
+        self.write_timeout = 15000.0  # ms
         # strategy : try_twice or select
-        self.strategy = 'try_twice'
+        self.strategy = "try_twice"
         if isinstance(device_specifier, str):
-            if device_specifier.startswith('usb://'):
+            if device_specifier.startswith("usb://"):
                 device_specifier = device_specifier[6:]
-            vendor_product, _, serial = device_specifier.partition('/')
-            vendor, _, product = vendor_product.partition(':')
+            vendor_product, _, serial = device_specifier.partition("/")
+            vendor, _, product = vendor_product.partition(":")
             vendor, product = int(vendor, 16), int(product, 16)
             for result in list_available_devices():
-                printer = result['instance']
-                if printer.idVendor == vendor and printer.idProduct == product or (serial and printer.iSerialNumber == serial):
+                printer = result["instance"]
+                if (
+                    printer.idVendor == vendor
+                    and printer.idProduct == product
+                    or (serial and printer.iSerialNumber == serial)
+                ):
                     self.dev = printer
                     break
             if self.dev is None:
-                raise ValueError('Device not found')
+                raise ValueError("Device not found")
         elif isinstance(device_specifier, usb.core.Device):
             self.dev = device_specifier
         else:
-            raise NotImplementedError('Currently the printer can be specified either via an appropriate string or via a usb.core.Device instance.')
+            raise NotImplementedError(
+                "Currently the printer can be specified either via an appropriate string or via a usb.core.Device instance."
+            )
 
         # Now we are sure to have self.dev around, start using it:
 
@@ -101,38 +114,45 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
         intf = usb.util.find_descriptor(cfg, bInterfaceClass=7)
         assert intf is not None
 
-        ep_match_in  = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_IN
-        ep_match_out = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_OUT
+        ep_match_in = (
+            lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_IN
+        )
+        ep_match_out = (
+            lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_OUT
+        )
 
-        ep_in  = usb.util.find_descriptor(intf, custom_match=ep_match_in)
+        ep_in = usb.util.find_descriptor(intf, custom_match=ep_match_in)
         ep_out = usb.util.find_descriptor(intf, custom_match=ep_match_out)
 
-        assert ep_in  is not None
+        assert ep_in is not None
         assert ep_out is not None
 
         self.write_dev = ep_out
-        self.read_dev  = ep_in
+        self.read_dev = ep_in
 
     def _raw_read(self, length):
         # pyusb Device.read() operations return array() type - let's convert it to bytes()
         return bytes(self.read_dev.read(length))
 
     def _read(self, length=32):
-        if self.strategy == 'try_twice':
+        if self.strategy == "try_twice":
             data = self._raw_read(length)
             if data:
                 return bytes(data)
             else:
-                time.sleep(self.read_timeout/1000.)
+                time.sleep(self.read_timeout / 1000.0)
                 return self._raw_read(length)
-        elif self.strategy == 'select':
-            data = b''
+        elif self.strategy == "select":
+            data = b""
             start = time.time()
-            while (not data) and (time.time() - start < self.read_timeout/1000.):
+            while (not data) and (time.time() - start < self.read_timeout / 1000.0):
                 result, _, _ = select.select([self.read_dev], [], [], 0)
                 if self.read_dev in result:
                     data += self._raw_read(length)
-                if data: break
+                if data:
+                    break
                 time.sleep(0.001)
             if not data:
                 # one last try if still no data:
@@ -140,7 +160,7 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
             else:
                 return data
         else:
-            raise NotImplementedError('Unknown strategy')
+            raise NotImplementedError("Unknown strategy")
 
     def _write(self, data):
         self.write_dev.write(data, int(self.write_timeout))
