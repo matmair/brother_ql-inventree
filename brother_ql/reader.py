@@ -3,7 +3,6 @@
 import struct
 import io
 import logging
-import sys
 
 from PIL import Image
 from PIL.ImageOps import colorize

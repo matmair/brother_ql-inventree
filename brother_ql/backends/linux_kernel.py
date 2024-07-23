@@ -5,7 +5,10 @@ Backend to support Brother QL-series printers via the linux kernel USB printer i
 Works on Linux.
 """
 
-import glob, os, time, select
+import glob
+import os
+import time
+import select
 
 from .generic import BrotherQLBackendGeneric
 

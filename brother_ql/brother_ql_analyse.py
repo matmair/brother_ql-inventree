@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import sys, argparse, logging
+import sys
+import argparse
+import logging
 
 from brother_ql.reader import BrotherQLReader
 

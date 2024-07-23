@@ -7,7 +7,8 @@ Helpers for the subpackage brother_ql.backends
 * printing
 """
 
-import logging, time
+import logging
+import time
 
 from brother_ql.backends import backend_factory, guess_backend
 from brother_ql.reader import interpret_response

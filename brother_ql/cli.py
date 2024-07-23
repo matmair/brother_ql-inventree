@@ -10,12 +10,8 @@ import click
 from brother_ql.devicedependent import (
     models,
     label_sizes,
-    label_type_specs,
-    DIE_CUT_LABEL,
-    ENDLESS_LABEL,
-    ROUND_DIE_CUT_LABEL,
 )
-from brother_ql.backends import available_backends, backend_factory
+from brother_ql.backends import available_backends
 
 
 logger = logging.getLogger("brother_ql")
@@ -114,8 +110,10 @@ def env(ctx, *args, **kwargs):
     """
     print debug info about running environment
     """
-    import sys, platform, os, shutil
-    from pkg_resources import get_distribution, working_set
+    import sys
+    import platform
+    import shutil
+    from pkg_resources import get_distribution
 
     print("\n##################\n")
     print("Information about the running environment of brother_ql.")

@@ -12,13 +12,10 @@ import logging
 
 import packbits
 from PIL import Image
-import io
 
 from brother_ql.models import ModelsManager
 from .devicedependent import (
     models,
-    min_max_feed,
-    min_max_length_dots,
     number_bytes_per_row,
     compressionsupport,
     cuttingsupport,
@@ -28,7 +25,6 @@ from .devicedependent import (
 )
 
 from . import (
-    BrotherQLError,
     BrotherQLUnsupportedCmd,
     BrotherQLUnknownModel,
     BrotherQLRasterError,

@@ -3,7 +3,8 @@
 import logging
 
 from PIL import Image
-import PIL.ImageOps, PIL.ImageChops
+import PIL.ImageOps
+import PIL.ImageChops
 
 from brother_ql.devicedependent import (
     ENDLESS_LABEL,

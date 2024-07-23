@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys, argparse, logging, struct, io, logging, sys, os, time
-from pprint import pprint, pformat
+import argparse
+import logging
+import time
 
 from brother_ql.reader import (
     OPCODES,
