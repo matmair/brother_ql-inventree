@@ -163,6 +163,7 @@ def env(ctx, *args, **kwargs):
 @click.option(
     "-l",
     "--label",
+    required=True,
     type=click.Choice(label_sizes),
     envvar="BROTHER_QL_LABEL",
     help="The label (size, type - die-cut or endless). Run `brother_ql info labels` for a full list including ideal pixel dimensions.",

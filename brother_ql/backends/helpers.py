@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 def discover(backend_identifier="linux_kernel"):
+    if backend_identifier is None:
+        logger.info("Backend for discovery not specified, defaulting to linux_kernel")
+        backend_identifier = "linux_kernel"
     be = backend_factory(backend_identifier)
     list_available_devices = be["list_available_devices"]
     BrotherQLBackend = be["backend_class"]
