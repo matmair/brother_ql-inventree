@@ -51,30 +51,28 @@ def discover(ctx):
         backend = "pyusb"
     from brother_ql.backends.helpers import discover, get_printer, get_status
 
-    available_devices = discover(backend_identifier=backend)
+    # linux_kernel backend will check for permissions and omit inaccessilble and incompatible devices
+    # pyusb backend cannot do permission checks, will just have to try
+    # network backend doesn't support discovery for now
+    available_devices = []
+
+    try:
+        available_devices = discover(backend_identifier=backend)
+    except NotImplementedError:
+        logger.error(f"The {backend} backend does not support discovery yet.")
+        return
+
     for device in available_devices:
-        status = None
-
-        # skip network discovery since it's not supported
-        if backend == "pyusb" or backend == "linux_kernel":
-            logger.info(f"Probing device at {device['identifier']}")
-
-            # check permissions before accessing lp* devices
-            if backend == "linux_kernel":
-                url = urlparse(device["identifier"])
-                if not os.access(url.path, os.W_OK):
-                    logger.info(
-                        f"Cannot access device {device['identifier']} due to insufficient permissions. You need to be a part of the lp group to access printers with this backend."
-                    )
-                    continue
-
-            # send status request
-            printer = get_printer(
-                printer_identifier=device["identifier"],
-                backend_identifier=backend,
-            )
-            status = get_status(printer)
-            print(f"Found a label printer at: {device['identifier']} ({status['model']})")
+        logger.debug(f"Probing device at {device['identifier']}")
+        printer = get_printer(
+            printer_identifier=device["identifier"],
+            backend_identifier=backend,
+        )
+        status = get_status(printer)
+        if status['model'] == "Unknown":
+            print(f"Found unkown printer at: {device['identifier']}. Compatibility is unknown.")
+        else:
+            print(f"Found compatible printer {status['model']} at: {device['identifier']}")
 
 def discover_and_list_available_devices(backend):
     from brother_ql.backends.helpers import discover

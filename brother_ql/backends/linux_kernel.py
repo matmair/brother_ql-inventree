@@ -6,21 +6,98 @@ Works on Linux.
 """
 
 import glob, os, time, select
+import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .generic import BrotherQLBackendGeneric
 
-def list_available_devices():
+def __parse_ieee1284_id(id):
+    # parse IEEE1284 ID info into a dictionary
+    # MFG:Brother;CMD:PT-CBP;MDL:PT-P700;CLS:PRINTER;CID:Brother LabelPrinter TypeA1;
+    # MFG:Kyocera Mita;Model:Kyocera Mita Ci-1100;COMMAND SET: POSTSCRIPT,PJL,PCL
+    elements = id.split(";")[:-1] # discard the last blank element
+    return {kv[0].casefold(): kv[1] for kv in map(lambda s: s.split(':'), elements)}
+
+def list_available_devices(ums_warning=True):
     """
-    List all available devices for the linux kernel backend
+    List all available compatible devices for the linux kernel backend
+    The function will attempt to read the IEEE1284 ID of all USB printers and verify:
+    - Manufacturer is Brother
+    - Command set is PT-CBP, aka the raster command set
+
+    :param bool ums_warning: enable warinings when printers in P-Touch Editor Lite are detected
 
     returns: devices: a list of dictionaries with the keys 'identifier' and 'instance': \
         [ {'identifier': 'file:///dev/usb/lp0', 'instance': None}, ] \
         Instance is set to None because we don't want to open (and thus potentially block) the device here.
     """
 
-    paths = glob.glob('/dev/usb/lp*')
+    all_printer_names = [re.search('(lp\d+)$', path).group(0) for path in glob.glob('/dev/usb/lp*')]
+    pt_printer_info = {}
 
-    return [{'identifier': 'file://' + path, 'instance': None} for path in paths]
+    # read printer info into a dictionary like the following:
+    # {'lp1': {'mfg': 'Brother', 'cmd': 'PT-CBP', 'mdl': 'QL-700', 'cls': 'PRINTER'}}
+    for name in all_printer_names:
+        printer_path = f"/dev/usb/{name}"
+        id_path = f"/sys/class/usbmisc/{name}/device/ieee1284_id"
+        info = None
+        try:
+            with open(id_path, "r") as f:
+                info = __parse_ieee1284_id(f.read())
+        except FileNotFoundError:
+            logger.warn(f"Unable to retrieve device info for printer {name}, cannot check for compatibility.")
+            continue
+
+        # check IEEE1284 MFG and CMD fields
+        manufacturer = ''
+        for m in 'mfg', 'manufacturer':
+            if info.get(m) is not None:
+                manufacturer = info.get(m)
+
+        model = ''
+        for m in 'model', 'mdl':
+            if info.get(m) is not None:
+                model = info.get(m)
+
+        command_set = ''
+        for c in 'cmd', 'command set':
+            if info.get(c) is not None:
+                command_set = info.get(c)
+
+        if manufacturer == 'Brother' and command_set == 'PT-CBP':
+            logger.info(f"Compatible printer at {name}: {manufacturer} {model}")
+        else:
+            logger.info(f"Inompatible printer at {name}: {manufacturer} {model}")
+            continue
+
+        # check permissions
+        if not os.access(printer_path, os.W_OK):
+            logger.info(
+                f"Cannot access device {printer_path} due to insufficient permissions. You need to be a part of the lp group to access printers with this backend."
+            )
+            continue
+
+        # if everything is ok, add printer to the list
+        pt_printer_info[name] = info
+
+    logger.debug(pt_printer_info)
+    pt_printer_names = pt_printer_info.keys()
+
+    # P-Touch Editor Lite (ums) detection
+    # look for paths created via persistent block device naming from udev
+    if ums_warning:
+        ums_paths = [os.path.basename(path) for path in glob.glob('/dev/disk/by-id/usb-Brother_*_*-0:0-part1')] 
+        for path in ums_paths:
+            try:
+                model = re.search('^(?:usb-Brother_)((?:PT|QL)-[A-Z0-9]{2,5})(?:_[A-Z0-9]+-0:0-part1)$', path).group(1)
+                logger.warn(f"Detected a label printer {model} in the unsupported P-Touch Editor Lite mode.")
+            except AttributeError or IndexError:
+                logger.warn(f"Detected a label printer in the unsupported P-Touch Editor Lite mode at {path}")
+            logger.warn("Disable P-Touch Editor Lite by holding down the corresponding button on the printer until the light goes off.")
+
+    return [{'identifier': 'file://' + '/dev/usb/' + n, 'instance': None} for n in pt_printer_names]
 
 class BrotherQLBackendLinuxKernel(BrotherQLBackendGeneric):
     """

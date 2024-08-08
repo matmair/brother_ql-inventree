@@ -39,6 +39,8 @@ class Model(object):
     #: Number of NULL bytes needed for the invalidate command.
     num_invalidate_bytes = attrib(type=int, default=200)
     #: Hardware IDs
+    # series code and model code are obtained from the status reply sent by the printer
+    # product id is the USB PID for the printer
     series_code = attrib(type=int, default=0xFFFF)
     model_code = attrib(type=int, default=0xFFFF)
     product_id = attrib(type=int, default=0xFFFF)
