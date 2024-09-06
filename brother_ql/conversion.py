@@ -31,6 +31,8 @@ def convert(qlr, images, label,  **kwargs):
     :Keyword Arguments:
         * **cut** (``bool``) --
           Enable cutting after printing the labels.
+        * **half_cut** (``bool``) --
+          Enable partial cuts between the labels.
         * **dither** (``bool``) --
           Instead of applying a threshold to the pixel values, approximate grey tones with dithering.
         * **compress**
@@ -48,6 +50,7 @@ def convert(qlr, images, label,  **kwargs):
     device_pixel_width = qlr.get_pixel_width()
 
     cut = kwargs.get('cut', True)
+    half_cut = kwargs.get('half_cut', True)
     dither = kwargs.get('dither', False)
     compress = kwargs.get('compress', False)
     red = kwargs.get('red', False)
@@ -177,6 +180,8 @@ def convert(qlr, images, label,  **kwargs):
         try:
             qlr.dpi_600 = dpi_600
             qlr.cut_at_end = cut
+            qlr.no_chain_printing = cut
+            qlr.half_cut = half_cut
             qlr.two_color_printing = True if red else False
             qlr.add_expanded_mode()
         except BrotherQLUnsupportedCmd:
