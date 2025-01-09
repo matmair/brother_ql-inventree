@@ -103,7 +103,7 @@ def _rasterize_images(qlr: BrotherQLRaster, images, label, queue: bool = False, 
                 im = im.resize((im.size[0]//2, im.size[1]))
             if im.size[0] != dots_printable[0]:
                 hsize = int((dots_printable[0] / im.size[0]) * im.size[1])
-                im = im.resize((dots_printable[0], hsize), Image.LANCZOS)
+                im = im.resize((dots_printable[0], hsize), Image.Resampling.LANCZOS)
                 logger.debug('Need to resize the image...')
             if im.size[0] < device_pixel_width:
                 new_im = Image.new(im.mode, (device_pixel_width, im.size[1]), (255,)*len(im.mode))
@@ -145,7 +145,7 @@ def _rasterize_images(qlr: BrotherQLRaster, images, label, queue: bool = False, 
             im = PIL.ImageOps.invert(im)
 
             if dither:
-                im = im.convert("1", dither=Image.FLOYDSTEINBERG)
+                im = im.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
             else:
                 im = im.point(lambda x: 0 if x < threshold else 255, mode="1")
 

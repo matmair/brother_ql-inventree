@@ -25,7 +25,7 @@ printer_help = "The identifier for the printer. This could be a string like tcp:
 @click.option('--debug', is_flag=True)
 @click.version_option()
 @click.pass_context
-def cli(ctx, *args, **kwargs):
+def cli(ctx: click.Context, *args, **kwargs):
     """ Command line interface for the brother_ql Python package. """
 
     backend = kwargs.get('backend', None)
@@ -43,7 +43,7 @@ def cli(ctx, *args, **kwargs):
 
 @cli.command()
 @click.pass_context
-def discover(ctx):
+def discover(ctx: click.Context):
     """ find connected label printers """
     backend = ctx.meta.get('BACKEND', 'pyusb')
     if backend is None:
@@ -83,12 +83,12 @@ def discover_and_list_available_devices(backend):
 
 @cli.group()
 @click.pass_context
-def info(ctx, *args, **kwargs):
+def info(ctx: click.Context, *args, **kwargs):
     """ list available labels, models etc. """
 
 @info.command(name='models')
 @click.pass_context
-def models_cmd(ctx, *args, **kwargs):
+def models_cmd(ctx: click.Context, *args, **kwargs):
     """
     List the choices for --model
     """
@@ -97,7 +97,7 @@ def models_cmd(ctx, *args, **kwargs):
 
 @info.command()
 @click.pass_context
-def labels(ctx, *args, **kwargs):
+def labels(ctx: click.Context, *args, **kwargs):
     """
     List the choices for --label
     """
@@ -106,7 +106,7 @@ def labels(ctx, *args, **kwargs):
 
 @info.command()
 @click.pass_context
-def env(ctx, *args, **kwargs):
+def env(ctx: click.Context, *args, **kwargs):
     """
     print debug info about running environment
     """
@@ -160,7 +160,7 @@ def env(ctx, *args, **kwargs):
 @click.option('--no-cut', is_flag=True, help="Don't cut the tape after printing the label.")
 @click.option('-q', '--queue', is_flag=True, help='Enable print queue support.')
 @click.pass_context
-def print_cmd(ctx, *args, **kwargs):
+def print_cmd(ctx: click.Context, *args, **kwargs):
     """ Print a label of the provided IMAGE. """
     backend = ctx.meta.get('BACKEND', 'pyusb')
     model = ctx.meta.get('MODEL')
@@ -189,7 +189,7 @@ def print_cmd(ctx, *args, **kwargs):
 @click.argument('instructions', type=click.File('rb'))
 @click.option('-f', '--filename-format', help="Filename format string. Default is: label{counter:04d}.png.")
 @click.pass_context
-def analyze_cmd(ctx, *args, **kwargs):
+def analyze_cmd(ctx: click.Context, *args, **kwargs):
     from brother_ql.reader import BrotherQLReader
     br = BrotherQLReader(kwargs.get('instructions'))
     if kwargs.get('filename_format'): br.filename_fmt = kwargs.get('filename_format')
@@ -198,14 +198,14 @@ def analyze_cmd(ctx, *args, **kwargs):
 @cli.command(name='send', short_help='send an instruction file to the printer')
 @click.argument('instructions', type=click.File('rb'))
 @click.pass_context
-def send_cmd(ctx, *args, **kwargs):
+def send_cmd(ctx: click.Context, *args, **kwargs):
     from brother_ql.backends.helpers import send
     send(instructions=kwargs['instructions'].read(), printer_identifier=ctx.meta.get('PRINTER'), backend_identifier=ctx.meta.get('BACKEND'), blocking=True)
 
 
 @cli.command(name="status", short_help="query printer status and the loaded media size")
 @click.pass_context
-def status_cmd(ctx, *args, **kwargs):
+def status_cmd(ctx: click.Context, *args, **kwargs):
     from brother_ql.backends.helpers import get_status, get_printer
 
     printer=get_printer(ctx.meta.get("PRINTER"), ctx.meta.get("BACKEND"))
@@ -239,7 +239,7 @@ def status_cmd(ctx, *args, **kwargs):
 @click.argument('key', required=True, type=click.Choice(['power-off-delay', 'auto-power-on']), metavar='[KEY]')
 @click.argument('value', type=int, metavar='[VALUE]', default=-1)
 @click.pass_context
-def configure_cmd(ctx, *args, **kwargs):
+def configure_cmd(ctx: click.Context, *args, **kwargs):
     from brother_ql.backends.helpers import configure
 
     if kwargs.get('action') == 'set' and kwargs.get('value') == -1:

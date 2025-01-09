@@ -15,7 +15,7 @@ from PIL import Image
 import io
 
 from brother_ql.models import ModelsManager
-from .devicedependent import models, \
+from brother_ql.devicedependent import models, \
                              min_max_feed, \
                              min_max_length_dots, \
                              number_bytes_per_row, \
@@ -25,7 +25,7 @@ from .devicedependent import models, \
                              two_color_support, \
                              modesetting
 
-from . import BrotherQLError, BrotherQLUnsupportedCmd, BrotherQLUnknownModel, BrotherQLRasterError
+from brother_ql.exceptions import BrotherQLError, BrotherQLUnsupportedCmd, BrotherQLUnknownModel, BrotherQLRasterError
 from io import BytesIO
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class BrotherQLRaster(object):
     :ivar bool exception_on_warning: If set to True, an exception is raised if trying to add instruction which are not supported on the selected model. If set to False, the instruction is simply ignored and a warning sent to logging/stderr.
     """
 
-    def __init__(self, model='QL-500'):
+    def __init__(self, model: str = 'QL-500'):
         if model not in models:
             raise BrotherQLUnknownModel()
         self.model = model
@@ -164,14 +164,14 @@ class BrotherQLRaster(object):
         self.data += b'\x00'
         # INFO:  media/quality (1B 69 7A) --> found! (payload: 8E 0A 3E 00 D2 00 00 00 00 00)
 
-    def add_autocut(self, autocut = False):
+    def add_autocut(self, autocut: bool = False):
         if self.model not in cuttingsupport:
             self._unsupported("Trying to call add_autocut with a printer that doesn't support it")
             return
         self.data += b'\x1B\x69\x4D' # ESC i M
         self.data += bytes([autocut << 6])
 
-    def add_cut_every(self, n=1):
+    def add_cut_every(self, n: int = 1):
         if self.model not in cuttingsupport:
             self._unsupported("Trying to call add_cut_every with a printer that doesn't support it")
             return
@@ -199,11 +199,11 @@ class BrotherQLRaster(object):
             flags |= self.two_color_printing << 0
         self.data += bytes([flags])
 
-    def add_margins(self, dots=0x23):
+    def add_margins(self, dots: int = 0x23):
         self.data += b'\x1B\x69\x64' # ESC i d
         self.data += struct.pack('<H', dots)
 
-    def add_compression(self, compression=True):
+    def add_compression(self, compression: bool = True):
         """
         Add an instruction enabling or disabling compression for the transmitted raster image lines.
         Not all models support compression. If the specific model doesn't support it but this method
@@ -226,7 +226,7 @@ class BrotherQLRaster(object):
             nbpr = number_bytes_per_row['default']
         return nbpr*8
 
-    def add_raster_data(self, image, second_image=None):
+    def add_raster_data(self, image: Image.Image, second_image: Image.Image | None = None):
         """
         Add the image data to the instructions.
         The provided image has to be binary (every pixel
@@ -273,7 +273,7 @@ class BrotherQLRaster(object):
             start += row_len
         self.data += file_str.getvalue()
 
-    def add_print(self, last_page=True):
+    def add_print(self, last_page: bool = True):
         if last_page:
             self.data += b'\x1A' # 0x1A = ^Z = SUB; here: EOF = End of File
         else:

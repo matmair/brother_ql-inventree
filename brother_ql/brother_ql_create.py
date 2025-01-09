@@ -5,6 +5,7 @@ import sys, argparse, logging
 from brother_ql.raster import BrotherQLRaster
 from brother_ql.conversion import convert
 from brother_ql.devicedependent import label_type_specs
+from brother_ql.exceptions import BrotherQLUnknownModel
 
 try:
     stdout = sys.stdout.buffer

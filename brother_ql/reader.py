@@ -198,10 +198,10 @@ RESP_BYTE_NAMES = [
   'Reserved',
 ]
 
-def hex_format(data):
+def hex_format(data: bytes) -> str:
     return ' '.join('{:02X}'.format(byte) for byte in data)
 
-def chunker(data, raise_exception=False):
+def chunker(data, raise_exception: bool = False):
     """
     Breaks data stream (bytes) into a list of bytes objects containing single instructions each.
 
@@ -236,12 +236,12 @@ def chunker(data, raise_exception=False):
         data = data[num_bytes:]
     #return instructions
 
-def match_opcode(data):
+def match_opcode(data: bytes):
     matching_opcodes = [opcode for opcode in OPCODES.keys() if data.startswith(opcode)]
     assert len(matching_opcodes) == 1
     return matching_opcodes[0]
 
-def interpret_response(data):
+def interpret_response(data: bytes) -> dict:
     data = bytes(data)
     if len(data) < 32:
         raise NameError('Insufficient amount of data received', hex_format(data))
@@ -334,7 +334,7 @@ def interpret_response(data):
     return response
 
 
-def merge_specific_instructions(chunks, join_preamble=True, join_raster=True):
+def merge_specific_instructions(chunks, join_preamble: bool = True, join_raster: bool = True):
     """
     Process a list of instructions by merging subsequent instuctions with
     identical opcodes into "large instructions".
@@ -469,7 +469,7 @@ class BrotherQLReader(object):
                                         pixdata_black[x, y] = (255, 255, 255, 0)
                             im_red.paste(im_black, (0, 0), im_black)
                             im = im_red
-                        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+                        im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
                         img_name = self.filename_fmt.format(counter=self.page_counter)
                         im.save(img_name)
                         print('Page saved as {}'.format(img_name))

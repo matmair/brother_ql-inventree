@@ -1,7 +1,7 @@
 from PIL import Image
 import colorsys
 
-def filtered_hsv(im, filter_h, filter_s, filter_v, default_col=(255,255,255)):
+def filtered_hsv(im: Image.Image, filter_h: int, filter_s: int, filter_v: int, default_col=(255,255,255)) -> Image.Image:
     """ https://stackoverflow.com/a/22237709/183995 """
 
     hsv_im = im.convert('HSV')
