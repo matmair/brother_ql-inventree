@@ -245,6 +245,15 @@ ALL_MODELS = [
         model_code=0x70,
         product_id=0x2086,
     ),
+    Model(
+        identifier="PT-2430PC",
+        min_max_length_dots=(57, 28346),
+        number_bytes_per_row=16,
+        series_code=0x30,
+        model_code=0x5A,
+        product_id=0x202d,
+    ),
+
 ]
 
 class ModelsManager(ElementsManager):
