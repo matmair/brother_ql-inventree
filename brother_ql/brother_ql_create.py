@@ -46,14 +46,14 @@ def main():
 
     qlr.exception_on_warning = True
 
-    create_label(qlr, args.image, args.label_size, threshold=args.threshold, cut=args.cut, rotate=args.rotate, dither=args.dither, compress=args.compress, red=args.red, dpi_600=args.dpi_600, hq=args.hq)
+    label_data = create_label(qlr, args.image, args.label_size, threshold=args.threshold, cut=args.cut, rotate=args.rotate, dither=args.dither, compress=args.compress, red=args.red, dpi_600=args.dpi_600, hq=args.hq)
 
-    args.outfile.write(qlr.data)
+    args.outfile.write(label_data)
 
 def create_label(qlr, image, label_size, threshold=70, cut=True, dither=False, compress=False, red=False, **kwargs):
     if not isinstance(image, list):
         image = [image]
-    convert(qlr, image, label_size, threshold=threshold, cut=cut, dither=dither, compress=compress, red=red, **kwargs)
+    return convert(qlr, image, label_size, threshold=threshold, cut=cut, dither=dither, compress=compress, red=red, **kwargs)
 
 if __name__ == "__main__":
     main()
