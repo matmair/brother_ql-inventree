@@ -20,14 +20,14 @@ def list_available_devices():
 
     # We need some snmp request sent to 255.255.255.255 here
     raise NotImplementedError()
-    return [{'identifier': 'tcp://' + path, 'instance': None} for path in paths]
+    # return [{'identifier': 'tcp://' + path, 'instance': None} for path in paths]
 
 class BrotherQLBackendNetwork(BrotherQLBackendGeneric):
     """
     BrotherQL backend using the Linux Kernel USB Printer Device Handles
     """
 
-    def __init__(self, device_specifier):
+    def __init__(self, device_specifier: str | int):
         """
         device_specifier: string or os.open(): identifier in the \
             format file:///dev/usb/lp0 or os.open() raw device handle.
@@ -62,12 +62,12 @@ class BrotherQLBackendNetwork(BrotherQLBackendGeneric):
         else:
             raise NotImplementedError('Currently the printer can be specified either via an appropriate string or via an os.open() handle.')
 
-    def _write(self, data):
+    def _write(self, data: bytes):
         self.s.settimeout(10)
         self.s.sendall(data)
         self.s.settimeout(self.read_timeout)
 
-    def _read(self, length=32):
+    def _read(self, length: int = 32) -> bytes:
         if self.strategy in ('socket_timeout', 'try_twice'):
             if self.strategy == 'socket_timeout':
                 tries = 1

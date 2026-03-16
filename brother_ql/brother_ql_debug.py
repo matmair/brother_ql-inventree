@@ -5,6 +5,7 @@ from pprint import pprint, pformat
 
 from brother_ql.reader import OPCODES, chunker, merge_specific_instructions, interpret_response, match_opcode, hex_format
 from brother_ql.backends import backend_factory, guess_backend
+from brother_ql.backends import BrotherQLBackendGeneric
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class BrotherQL_USBdebug(object):
     def __init__(self, dev, instructions_data, backend='linux_kernel'):
 
         be_cls = backend_factory(backend)['backend_class']
-        self.be = be_cls(dev)
+        self.be: BrotherQLBackendGeneric = be_cls(dev)
 
         self.sleep_time = 0.0
         self.sleep_before_read = 0.0

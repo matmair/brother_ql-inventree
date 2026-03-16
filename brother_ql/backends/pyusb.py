@@ -13,13 +13,14 @@ import sys
 import usb.core
 import usb.util
 import logging
+import select
 
 logger = logging.getLogger(__name__)
 from .generic import BrotherQLBackendGeneric
 
 BROTHER_VID = 0x04f9
 
-def list_available_devices(ums_warning=True):
+def list_available_devices(ums_warning: bool = True) -> list:
     """
     List all available devices for the respective backend
 
@@ -49,7 +50,7 @@ def list_available_devices(ums_warning=True):
     printers = usb.core.find(find_all=1, custom_match=find_class(usb.CLASS_PRINTER), idVendor=BROTHER_VID)
     ums_printers = usb.core.find(find_all=1, custom_match=find_class(usb.CLASS_MASS_STORAGE), idVendor=BROTHER_VID)
 
-    def get_descriptor(dev, descriptor):
+    def get_descriptor(dev: usb.Device, descriptor: int) -> None | str:
         result = None
         try:
             result = usb.util.get_string(dev, descriptor)
@@ -61,7 +62,7 @@ def list_available_devices(ums_warning=True):
             logger.warn("Cannot read device descriptor string, possible permission issue.")
         return result
 
-    def identifier(dev):
+    def identifier(dev: usb.Device) -> str:
         serial = get_descriptor(dev, dev.iSerialNumber)
         if serial is None:
             return 'usb://0x{:04x}:0x{:04x}'.format(dev.idVendor, dev.idProduct)
@@ -82,7 +83,7 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
     BrotherQL backend using PyUSB
     """
 
-    def __init__(self, device_specifier):
+    def __init__(self, device_specifier: str | usb.core.Device):
         """
         device_specifier: string or pyusb.core.Device: identifier of the \
             format usb://idVendor:idProduct/iSerialNumber or pyusb.core.Device instance.
@@ -145,11 +146,11 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
             self.dispose()
             sys.exit(1)
 
-    def _raw_read(self, length):
+    def _raw_read(self, length: int) -> bytes:
         # pyusb Device.read() operations return array() type - let's convert it to bytes()
         return bytes(self.read_dev.read(length))
 
-    def _read(self, length=32):
+    def _read(self, length: int = 32):
         if self.strategy == 'try_twice':
             data = self._raw_read(length)
             if data:
@@ -174,7 +175,7 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
         else:
             raise NotImplementedError('Unknown strategy')
 
-    def _write(self, data):
+    def _write(self, data: bytes):
         self.write_dev.write(data, int(self.write_timeout))
 
     def _dispose(self):

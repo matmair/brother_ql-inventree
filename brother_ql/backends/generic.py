@@ -1,10 +1,8 @@
-
-
 import logging
 
 logger = logging.getLogger(__name__)
 
-def list_available_devices(ums_warning=True):
+def list_available_devices(ums_warning: bool = True) -> list:
     """ List all available devices for the respective backend """
     # returns a list of dictionaries with the keys 'identifier' and 'instance':
     # [ {'identifier': '/dev/usb/lp0', 'instance': os.open('/dev/usb/lp0', os.O_RDWR)}, ]
@@ -13,7 +11,7 @@ def list_available_devices(ums_warning=True):
 
 class BrotherQLBackendGeneric(object):
 
-    def __init__(self, device_specifier):
+    def __init__(self, device_specifier: str):
         """
         device_specifier can be either a string or an instance
         of the required class type.
@@ -22,17 +20,17 @@ class BrotherQLBackendGeneric(object):
         self.read_dev  = None
         raise NotImplementedError()
 
-    def _write(self, data):
+    def _write(self, data: bytes):
         self.write_dev.write(data)
 
-    def _read(self, length=32):
+    def _read(self, length: int = 32) -> bytes:
         return bytes(self.read_dev.read(length))
 
-    def write(self, data):
+    def write(self, data: bytes):
         logger.debug('Writing %d bytes.', len(data))
         self._write(data)
 
-    def read(self, length=32):
+    def read(self, length: int = 32) -> bytes:
         try:
             ret_bytes = self._read(length)
             if ret_bytes: logger.debug('Read %d bytes.', len(ret_bytes))
@@ -52,3 +50,6 @@ class BrotherQLBackendGeneric(object):
 
     def __del__(self):
         self.dispose()
+
+    def list_available_devices(self) -> list:
+        raise NotImplementedError()

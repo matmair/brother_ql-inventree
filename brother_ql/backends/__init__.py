@@ -8,7 +8,7 @@ available_backends = [
   'linux_kernel',
 ]
 
-def guess_backend(identifier):
+def guess_backend(identifier: str) -> str:
     """ guess the backend from a given identifier string for the device """
     if identifier.startswith('usb://') or identifier.startswith('0x'):
         return 'pyusb'
@@ -20,7 +20,7 @@ def guess_backend(identifier):
         raise ValueError('Cannot guess backend for given identifier: %s' % identifier)
     
 
-def backend_factory(backend_name):
+def backend_factory(backend_name: str) -> dict:
 
     if backend_name == 'pyusb':
         from . import pyusb        as pyusb_backend

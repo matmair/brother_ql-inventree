@@ -15,7 +15,7 @@ from brother_ql.backends import BrotherQLBackendGeneric
 
 logger = logging.getLogger(__name__)
 
-def discover(backend_identifier='linux_kernel'):
+def discover(backend_identifier: str = 'linux_kernel') -> list:
     if backend_identifier is None:
         logger.info("Backend for discovery not specified, defaulting to linux_kernel.")
         backend_identifier = "linux_kernel"
@@ -25,7 +25,7 @@ def discover(backend_identifier='linux_kernel'):
     available_devices = list_available_devices()
     return available_devices
 
-def send(instructions, printer_identifier=None, backend_identifier=None, blocking=True):
+def send(instructions: bytes, printer_identifier: str = None, backend_identifier: str = None, blocking: bool = True):
     """
     Send instruction bytes to a printer.
 
@@ -56,7 +56,7 @@ def send(instructions, printer_identifier=None, backend_identifier=None, blockin
     list_available_devices = be['list_available_devices']
     BrotherQLBackend       = be['backend_class']
 
-    printer = BrotherQLBackend(printer_identifier)
+    printer: BrotherQLBackendGeneric = BrotherQLBackend(printer_identifier)
 
     start = time.time()
     logger.info('Sending instructions to the printer. Total: %d bytes.', len(instructions))
@@ -105,9 +105,9 @@ def send(instructions, printer_identifier=None, backend_identifier=None, blockin
     return status
 
 def get_printer(
-    printer_identifier=None,
-    backend_identifier=None,
-):
+    printer_identifier: str = None,
+    backend_identifier: str = None,
+) -> BrotherQLBackendGeneric:
     """
     Instantiate a printer object for communication. Only bidirectional transport backends are supported.
 
@@ -134,10 +134,10 @@ def get_printer(
     return printer
 
 def get_status(
-    printer,
-    receive_only=False,
-    target_status=None,
-):
+    printer: BrotherQLBackendGeneric,
+    receive_only: bool = False,
+    target_status: int = None,
+) -> dict:
     """
     Get printer status.
 
@@ -146,6 +146,7 @@ def get_status(
     :param int target_status: Expected status code.
     """
 
+    result = {}
     if not receive_only:
         printer.write(b"\x1b\x69\x53")  # "ESC i S" Status information request
     data = printer.read()
@@ -163,7 +164,7 @@ def get_setting(
     printer: BrotherQLBackendGeneric,
     setting: int,
     payload: bytes = None,
-):
+) -> dict:
     """
     Get setting from printer.
 
@@ -193,7 +194,7 @@ def write_setting(
     printer: BrotherQLBackendGeneric,
     setting: int,
     payload: bytes,
-):
+) -> dict:
     """
     Write setting to printer.
 

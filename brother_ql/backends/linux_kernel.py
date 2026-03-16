@@ -13,14 +13,14 @@ logger = logging.getLogger(__name__)
 
 from .generic import BrotherQLBackendGeneric
 
-def __parse_ieee1284_id(id):
+def __parse_ieee1284_id(id: str) -> dict:
     # parse IEEE1284 ID info into a dictionary
     # MFG:Brother;CMD:PT-CBP;MDL:PT-P700;CLS:PRINTER;CID:Brother LabelPrinter TypeA1;
     # MFG:Kyocera Mita;Model:Kyocera Mita Ci-1100;COMMAND SET: POSTSCRIPT,PJL,PCL
     elements = id.split(";")[:-1] # discard the last blank element
     return {kv[0].casefold(): kv[1] for kv in map(lambda s: s.split(':'), elements)}
 
-def list_available_devices(ums_warning=True):
+def list_available_devices(ums_warning: bool = True) -> list:
     """
     List all available compatible devices for the linux kernel backend
     The function will attempt to read the IEEE1284 ID of all USB printers and verify:
@@ -106,7 +106,7 @@ class BrotherQLBackendLinuxKernel(BrotherQLBackendGeneric):
     BrotherQL backend using the Linux Kernel USB Printer Device Handles
     """
 
-    def __init__(self, device_specifier):
+    def __init__(self, device_specifier: str | int):
         """
         device_specifier: string or os.open(): identifier in the \
             format file:///dev/usb/lp0 or os.open() raw device handle.
@@ -127,10 +127,10 @@ class BrotherQLBackendLinuxKernel(BrotherQLBackendGeneric):
         self.write_dev = self.dev
         self.read_dev  = self.dev
 
-    def _write(self, data):
+    def _write(self, data: bytes):
         os.write(self.write_dev, data)
 
-    def _read(self, length=32):
+    def _read(self, length: int = 32) -> bytes:
         if self.strategy == 'try_twice':
             data = os.read(self.read_dev, length)
             if data:
