@@ -8,6 +8,7 @@ Requires PyUSB: https://github.com/walac/pyusb/
 Install via `pip install pyusb`
 """
 
+import select
 import time
 import sys
 import usb.core
@@ -101,9 +102,19 @@ class BrotherQLBackendPyUSB(BrotherQLBackendGeneric):
             vendor, product = int(vendor, 16), int(product, 16)
             for result in list_available_devices(ums_warning=False):
                 printer = result['instance']
-                if printer.idVendor == vendor and printer.idProduct == product or (serial and printer.iSerialNumber == serial):
-                    self.dev = printer
-                    break
+                # check if vendor and product match
+                if printer.idVendor == vendor and printer.idProduct == product:
+                    # if we have a serial, it must also match
+                    if serial:
+                        # Get the actual serial string from the device
+                        device_serial = usb.util.get_string(printer, printer.iSerialNumber) if printer.iSerialNumber else None
+                        if device_serial == serial:
+                            self.dev = printer
+                            break
+                    else:
+                        # no serial specified, vendor/product match is sufficient
+                        self.dev = printer
+                        break
             if self.dev is None:
                 raise ValueError('Device not found')
         elif isinstance(device_specifier, usb.core.Device):
